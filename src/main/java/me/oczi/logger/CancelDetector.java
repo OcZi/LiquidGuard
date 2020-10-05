@@ -13,7 +13,7 @@ public class CancelDetector<T extends Event> implements EventExecutor {
         this.callableListener = callableListener;
     }
 
-    public void execute(Listener listener,
+    public void execute(@NotNull Listener listener,
                         @NotNull Event event) {
         execute(event);
     }
