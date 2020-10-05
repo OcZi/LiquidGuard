@@ -1,0 +1,5 @@
+name: LiquidGuard
+main: me.oczi.LiquidGuardPlugin
+api-version: "1.15"
+version: "1.0"
+depend: [WorldGuard]
