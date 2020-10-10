@@ -1,10 +1,11 @@
 package me.oczi;
 
 import me.oczi.listener.HistoryLiquidListener;
-import me.oczi.listener.WorldGuardListener;
-import me.oczi.util.Listeners;
+import me.oczi.listener.LiquidGuardListener;
+import me.oczi.util.Guards;
+import me.oczi.util.LiquidFlag;
 import org.bukkit.Bukkit;
-import org.bukkit.plugin.RegisteredListener;
+import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
@@ -17,16 +18,19 @@ public class LiquidGuardPlugin extends JavaPlugin {
     }
 
     @Override
+    public void onLoad() {
+        Guards.registerFlags(LiquidFlag.getFlags());
+    }
+
+    @Override
     public void onEnable() {
-        Bukkit.getPluginManager()
-            .registerEvents(
-                new HistoryLiquidListener(), this);
-        RegisteredListener logger =
-            Listeners.newLoggerListener(
-                new WorldGuardListener(), this);
-        runTaskLater(
-            () -> Listeners.injectListener(logger),
-            10L);
+        super.saveDefaultConfig();
+        PluginManager pluginManager = Bukkit.getPluginManager();
+        pluginManager.registerEvents(
+            new HistoryLiquidListener(), this);
+
+        pluginManager.registerEvents(
+            new LiquidGuardListener(), this);
     }
 
     public static BukkitTask runTaskLater(BukkitRunnable runnable,
@@ -68,7 +72,6 @@ public class LiquidGuardPlugin extends JavaPlugin {
     public static void cancelTask(int id) {
         Bukkit.getScheduler().cancelTask(id);
     }
-
 
     public static LiquidGuardPlugin getInstance() {
         return instance;

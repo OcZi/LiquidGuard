@@ -6,57 +6,65 @@ import me.oczi.api.LiquidType;
 import me.oczi.api.node.block.LiquidNode;
 import me.oczi.api.region.Region;
 import me.oczi.util.BukkitParser;
+import me.oczi.util.Configs;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
+import org.bukkit.entity.Player;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 
 public class HistoryLiquid {
-    private static final Cache<Location, LiquidNode> historyCache;
+    private static final Cache<Location, LiquidEntry> historyCache;
 
     static {
         historyCache = CacheBuilder.newBuilder()
-            .expireAfterWrite(5, TimeUnit.MINUTES)
+            .expireAfterWrite(
+                Configs.getCacheLiquidTimeOut(),
+                TimeUnit.MINUTES)
             .build();
     }
 
     public static List<LiquidEntry> getInRegion(Region region) {
         historyCache.cleanUp();
-        if (isEmpty()) {
-            return Collections.emptyList();
-        }
-        List<LiquidEntry> result = new ArrayList<>();
+        List<LiquidEntry> list = new ArrayList<>();
         for (Block block : region.getBlocks()) {
-            Location location = block.getLocation();
-            if (hasHistoryOf(location)) {
-                result.add(
-                    new LiquidEntry(
-                        getHistoryMap().get(location)));
-            }
+            LiquidEntry entry = historyCache.getIfPresent(
+                block.getLocation());
+            if (entry == null) continue;
+            list.add(entry);
         }
-        return result;
+        return list;
     }
 
     public static void put(Location location) {
-        put(location.getBlock(), location);
+        put(null, location);
+    }
+
+    public static void put(@Nullable Player player, Location location) {
+        put(player, location.getBlock(), location);
     }
 
     public static void put(Block block) {
-        put(block, block.getLocation());
+        put(null, block);
     }
 
-    private static void put(Block block, Location location) {
+    public static void put(@Nullable Player player, Block block) {
+        put(player, block, block.getLocation());
+    }
+
+    private static void put(@Nullable Player player, Block block, Location location) {
         historyCache.cleanUp();
-        LiquidType liquidType = BukkitParser.checkedAsLiquid(
-            block,
-            "Block is not a liquid type.");
+        LiquidType liquidType = BukkitParser
+            .uncheckedAsLiquid(block);
+        if (!LiquidType.isValid(liquidType)) return;
         LiquidNode node = LiquidNode
             .newNode(liquidType, block);
-        historyCache.put(location, node);
+        getHistoryMap().putIfAbsent(location,
+            LiquidEntry.of(player, node));
     }
 
     public static boolean hasHistoryOf(Location location) {
@@ -69,6 +77,8 @@ public class HistoryLiquid {
     }
 
     public static void remove(Location location) {
+        LiquidEntry entry = historyCache.getIfPresent(location);
+        if (entry != null) entry.lock();
         historyCache.invalidate(location);
         historyCache.cleanUp();
     }
@@ -77,11 +87,11 @@ public class HistoryLiquid {
         return getHistoryMap().isEmpty();
     }
 
-    public static Cache<Location, LiquidNode> getHistoryCache() {
+    public static Cache<Location, LiquidEntry> getHistoryCache() {
         return historyCache;
     }
 
-    public static ConcurrentMap<Location, LiquidNode> getHistoryMap() {
+    public static ConcurrentMap<Location, LiquidEntry> getHistoryMap() {
         return historyCache.asMap();
     }
 }

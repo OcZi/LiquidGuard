@@ -1,13 +1,12 @@
 package me.oczi.util;
 
-import com.sk89q.worldguard.protection.flags.Flags;
+import me.oczi.api.LiquidType;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.block.data.Waterlogged;
-
-import static me.oczi.util.Guards.isStateDeny;
+import org.bukkit.block.data.type.Slab;
 
 public interface Liquids {
 
@@ -20,7 +19,7 @@ public interface Liquids {
      */
     static boolean isBucketLiquid(Material bucket) {
         return bucket == Material.WATER_BUCKET ||
-               bucket == Material.LAVA_BUCKET;
+            bucket == Material.LAVA_BUCKET;
     }
 
     /**
@@ -36,34 +35,40 @@ public interface Liquids {
             : Material.LAVA;
     }
 
-    static boolean isLiquidDeny(Block block) {
-        Location location = block.getLocation();
-        return isWaterDeny(location) && isLavaDeny(location);
+    static void disableFlow(Block goal) {
+        if (goal.isLiquid()) {
+            goal.setType(Material.AIR);
+            return;
+        }
+        Liquids.switchWaterlogged(goal);
     }
 
-    static boolean switchLiquidDeny(Location location,
-                                    Material material) {
-        return material == Material.WATER
-            ? isWaterDeny(location)
-            : isLavaDeny(location);
+    static LiquidFlag switchFlagByLiquid(LiquidType material) {
+        return material == LiquidType.WATER
+            ? LiquidFlag.WATER_ENTER
+            : LiquidFlag.LAVA_ENTER;
+    }
+
+    static boolean switchLiquidDeny(Location location, LiquidFlag flag) {
+        return GuardRegion.isStateDeny(location, flag.stateFlag());
     }
 
     static void switchWaterlogged(Block block) {
         BlockData data = block.getBlockData();
-        if (!(data instanceof Waterlogged)) {
-            return;
-        }
-
+        if (!(data instanceof Waterlogged)) return;
         Waterlogged logged = (Waterlogged) data;
-        logged.setWaterlogged(!logged.isWaterlogged());
-        block.setBlockData(logged);
+        if (logged.isWaterlogged()) {
+            logged.setWaterlogged(false);
+            setWithSameType(logged);
+            block.setType(logged.getMaterial());
+            block.setBlockData(logged);
+        }
     }
 
-    static boolean isWaterDeny(Location location) {
-        return isStateDeny(location, Flags.WATER_FLOW);
-    }
-
-    static boolean isLavaDeny(Location location) {
-        return isStateDeny(location, Flags.LAVA_FLOW);
+    static void setWithSameType(Waterlogged waterlogged) {
+        if (waterlogged instanceof Slab) {
+            Slab slab = (Slab) waterlogged;
+            slab.setType(slab.getType());
+        }
     }
 }

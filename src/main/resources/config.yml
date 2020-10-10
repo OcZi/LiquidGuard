@@ -1,0 +1,25 @@
+region-related:
+
+  ## Radius of block to check.
+  region-radius: 10
+
+liquid-related:
+
+  ## Delay to start the check of liquid in ticks.
+  check-liquid-delay: 100
+
+  ## Cooldown to check the state of liquid in ticks.
+  ## Used for cases that the fluid flow still preserve
+  ## by another placed liquid.
+  check-liquid-period: 12
+
+  ## The number of tries that have the check
+  ## to see if the fluid is still there.
+  check-liquid-tries: 12
+
+  ## Do pathfinding process asynchronous.
+  async-pathfinding: true
+
+  ## Minutes to cache a liquid source.
+  ## Used for the pathfinding.
+  cache-liquid-timeout: 4

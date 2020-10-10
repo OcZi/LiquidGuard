@@ -2,8 +2,8 @@ package me.oczi.listener;
 
 import me.oczi.HistoryLiquid;
 import me.oczi.LiquidGuardPlugin;
+import me.oczi.util.GuardRegion;
 import me.oczi.util.Liquids;
-import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.data.type.Dispenser;
@@ -21,13 +21,10 @@ public class HistoryLiquidListener implements Listener {
         Material bucket = event.getBucket();
         if (Liquids.isBucketLiquid(bucket)) {
             Block liquidPlaced = event.getBlock();
-            Location location = liquidPlaced.getLocation();
-            boolean isDeny = Liquids
-                .switchLiquidDeny(location, bucket);
-            if (!isDeny) {
-                LiquidGuardPlugin.runTaskLater(
-                    () -> HistoryLiquid.put(location),
-                    1L);
+            if (!GuardRegion.isInARegion(liquidPlaced)) {
+                LiquidGuardPlugin.runTask(
+                    () -> HistoryLiquid.put(
+                        event.getPlayer(), liquidPlaced));
             }
         }
     }
@@ -35,25 +32,26 @@ public class HistoryLiquidListener implements Listener {
     @EventHandler
     public void onBucketFill(PlayerBucketFillEvent event) {
         Block blockClicked = event.getBlockClicked();
-        System.out.println("history liquid fill called");
-        if (blockClicked.isLiquid()) {
-            HistoryLiquid.remove(blockClicked);
-            System.out.println("history liquid fill success");
-        }
+        HistoryLiquid.remove(blockClicked);
     }
 
     @EventHandler
     public void onDispenser(BlockDispenseEvent event) {
         ItemStack item = event.getItem();
-        System.out.println("dispenser called");
         Block block = event.getBlock();
+        // Redundant code for each condition
+        // to avoid an unnecessary query of region
+        // on every dispenser event.
         if (Liquids.isBucketLiquid(item.getType())) {
-            LiquidGuardPlugin.runTask(
-                () -> HistoryLiquid
-                    .put(getRelativeLiquid(block)));
-            System.out.println("dispenser success");
+            if (!GuardRegion.isInARegion(block)) {
+                LiquidGuardPlugin.runTask(
+                    () -> HistoryLiquid
+                        .put(getRelativeLiquid(block)));
+            }
         } else if (item.getType() == Material.BUCKET) {
-            HistoryLiquid.remove(getRelativeLiquid(block));
+            if (!GuardRegion.isInARegion(block)) {
+                HistoryLiquid.remove(getRelativeLiquid(block));
+            }
         }
     }
 
