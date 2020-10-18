@@ -6,7 +6,7 @@
 
     <groupId>me.oczi</groupId>
     <artifactId>LiquidGuard</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>2.0-SNAPSHOT</version>
 
     <repositories>
         <repository>
@@ -21,14 +21,17 @@
             <id>sk89q-repo</id>
             <url>https://maven.enginehub.org/repo/</url>
         </repository>
+        <repository>
+            <id>unnamed-snapshots</id>
+            <url>https://repo.unnamed.team/repository/unnamed-snapshots/</url>
+        </repository>
     </repositories>
 
     <dependencies>
         <dependency>
             <groupId>me.oczi</groupId>
-            <artifactId>LiquidConnector</artifactId>
-            <version>0.5-SNAPSHOT</version>
-            <scope>compile</scope>
+            <artifactId>LiquidConnection-Core</artifactId>
+            <version>0.6-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>org.jetbrains</groupId>

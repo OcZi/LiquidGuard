@@ -3,14 +3,14 @@ package me.oczi.util;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
-import me.oczi.api.LiquidConnector;
+import me.oczi.api.LiquidConnection;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
 
 /**
  * Single-Asynchronous thread.
- * Used to run {@link LiquidConnector} async.
+ * Used to run {@link LiquidConnection} async.
  */
 public class AsyncThread {
     private static final ListeningExecutorService executorService;

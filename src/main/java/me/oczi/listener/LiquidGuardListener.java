@@ -3,7 +3,7 @@ package me.oczi.listener;
 import me.oczi.HistoryLiquid;
 import me.oczi.LiquidEntry;
 import me.oczi.LiquidGuardPlugin;
-import me.oczi.api.LiquidConnector;
+import me.oczi.api.LiquidConnection;
 import me.oczi.api.LiquidType;
 import me.oczi.api.Pathfinding;
 import me.oczi.api.TaskState;
@@ -62,8 +62,8 @@ public class LiquidGuardListener
             Block goal = entry.getNode().getBlock();
             Set<Block> levelBlocks = cuboid
                 .getBlocksBetweenLevel(
-                    to.getY(), from.getY());
-            LiquidConnector connector = Pathfinding
+                    to.getY(), goal.getY());
+            LiquidConnection connector = Pathfinding
                 .liquidConnector(
                     from,
                     goal,
@@ -82,7 +82,7 @@ public class LiquidGuardListener
         event.setCancelled(cancel);
     }
 
-    private void runByConfig(LiquidConnector connector,
+    private void runByConfig(LiquidConnection connector,
                              Consumer<LiquidNode> success,
                              Consumer<Throwable> failure) {
         if (Configs.isConnectorAsync()) {
@@ -93,7 +93,7 @@ public class LiquidGuardListener
     }
 
     private void isSuccess(LiquidEntry entry,
-                           LiquidConnector connector,
+                           LiquidConnection connector,
                            Block cooldownBlock) {
         if (connector.getState() != TaskState.SUCCESSFULLY) {
             entry.unlock();
