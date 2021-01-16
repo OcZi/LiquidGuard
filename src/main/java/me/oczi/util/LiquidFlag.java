@@ -6,6 +6,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * WorldGuard's {@link StateFlag} for the plugin.
+ */
 public enum LiquidFlag {
     WATER_ENTER("water-enter", true),
     LAVA_ENTER("lava-enter", true);

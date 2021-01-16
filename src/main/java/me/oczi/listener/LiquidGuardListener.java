@@ -34,9 +34,9 @@ public class LiquidGuardListener
             .uncheckedAsLiquid(from);
         if (liquidType == LiquidType.NONE) return;
         LiquidFlag flag = Liquids.switchFlagByLiquid(liquidType);
-        if (!Liquids.switchLiquidDeny(
+        if (!Liquids.isLiquidDeny(
             to.getLocation(), flag)) return;
-        if (Liquids.switchLiquidDeny(
+        if (Liquids.isLiquidDeny(
             from.getLocation(), flag)) return;
 
         Region cuboid = Regions.newCuboidWithRadius(
@@ -140,6 +140,8 @@ public class LiquidGuardListener
         if (!block.isLiquid()) return false;
         Levelled levelled = (Levelled) block.getBlockData();
         int level = levelled.getLevel();
-        return level == 0 || level > 1;
+        return level == 0 // If level == 0 is a liquid source (Full level).
+            || level > 1; // If level > 1 the liquid can be expanded to their block neighbours.
+                          // else (level == 1) will cannot be expanded to any block.
     }
 }
